@@ -32,12 +32,22 @@ class Vertex{
 
 }
 
+enum Color{
+	WHITE,
+	GRAY,
+	BLACK
+}
+
 
 public class Graph {
 	
 	Vertex[] adjLists;
 	Boolean directed = false;
-	Boolean[] visited;
+	Color[] color;
+	int[] d;
+	int[] f;
+	int[] p;
+ 	int time = 0;
 	Queue<Integer> queue;
 	
 	public Graph (String file) throws FileNotFoundException	{
@@ -50,14 +60,18 @@ public class Graph {
 		
 		int noOfVertices = sc.nextInt();
 		adjLists = new Vertex[noOfVertices];
-		visited = new Boolean[noOfVertices];
+		color = new Color[noOfVertices];
+		d = new int[noOfVertices];
+		f = new int[noOfVertices];
+		p = new int[noOfVertices];
 		queue = new LinkedList<Integer>();
 		
 		//read vertices
 		for(int v=0; v < adjLists.length; v++)
 		{
 			adjLists[v] = new Vertex(sc.next(), null);
-			visited[v] = false;
+			color[v] = Color.WHITE;
+			p[v] = -1;
 		}
 		
 		//read edges
@@ -86,7 +100,7 @@ public class Graph {
 	void reset(){
 		for(int v=0; v < adjLists.length; v++)
 		{
-			visited[v] = false;
+			color[v] = Color.WHITE;
 		}
 	}
 	
@@ -107,14 +121,24 @@ public class Graph {
 	
 	void dfs(int u){
 		
-		visited[u] = true;
+		color[u] = Color.GRAY;
+		time = time+1;
+		d[u] = time;
+		
 		System.out.print(" ---> "+adjLists[u].name);
 		for(Neighbor nbr = adjLists[u].adjList; nbr!=null; nbr=nbr.next)
 		{
-			if(!visited[nbr.vertexNum]){
+			if(color[nbr.vertexNum] == Color.GRAY) System.out.println(" \n Cycle exists.");
+			
+			if(color[nbr.vertexNum] == Color.WHITE){
+				p[nbr.vertexNum] = u;
 				dfs(nbr.vertexNum);
 			}
 		}
+		
+		color[u] = Color.BLACK;
+		time = time+1;
+		f[u] = time;
 		
 	}
 	
@@ -122,16 +146,16 @@ public class Graph {
 	void bfs(int u){
 		
 		queue.add(u);
-		visited[u] = true;
+		color[u] = Color.GRAY;
 		
 		while(!queue.isEmpty()){
 			int v = (int) queue.poll();
 			System.out.print(" ---> "+adjLists[v].name);
 			for(Neighbor nbr = adjLists[v].adjList; nbr!= null; nbr = nbr.next)
 			{
-				if(!visited[nbr.vertexNum]){
+				if(color[nbr.vertexNum] == Color.WHITE){
 					queue.add(nbr.vertexNum);
-					visited[nbr.vertexNum] = true;
+					color[nbr.vertexNum] = Color.GRAY;
 				}
 			}
 		}
@@ -151,7 +175,7 @@ public class Graph {
 		System.out.print("DFS traversal: ");
 		for(int u=0; u < graph.adjLists.length; u++)
 		{
-			if(!graph.visited[u]){
+			if(graph.color[u] == Color.WHITE){
 				System.out.println("\n Connected Graph: ");
 				graph.dfs(u);
 			}
@@ -163,7 +187,7 @@ public class Graph {
 		System.out.print("BFS traversal: ");
 		for(int u=0; u < graph.adjLists.length; u++)
 		{
-			if(!graph.visited[u]){
+			if(graph.color[u] == Color.WHITE){
 				System.out.println("\n Connected Graph: ");
 				graph.bfs(u);
 			}
