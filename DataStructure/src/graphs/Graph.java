@@ -3,6 +3,8 @@ package graphs;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
 
 
@@ -35,7 +37,8 @@ public class Graph {
 	
 	Vertex[] adjLists;
 	Boolean directed = false;
-	visited[] visited;
+	Boolean[] visited;
+	Queue<Integer> queue;
 	
 	public Graph (String file) throws FileNotFoundException	{
 		Scanner sc = new Scanner(new File(file));
@@ -44,12 +47,17 @@ public class Graph {
 			directed = false;
 		else directed = true;
 		
-		adjLists = new Vertex[sc.nextInt()];
+		
+		int noOfVertices = sc.nextInt();
+		adjLists = new Vertex[noOfVertices];
+		visited = new Boolean[noOfVertices];
+		queue = new LinkedList<Integer>();
 		
 		//read vertices
 		for(int v=0; v < adjLists.length; v++)
 		{
 			adjLists[v] = new Vertex(sc.next(), null);
+			visited[v] = false;
 		}
 		
 		//read edges
@@ -75,6 +83,12 @@ public class Graph {
 		return -1;
 	}
 	
+	void reset(){
+		for(int v=0; v < adjLists.length; v++)
+		{
+			visited[v] = false;
+		}
+	}
 	
 	void print(){
 		
@@ -93,8 +107,34 @@ public class Graph {
 	
 	void dfs(int u){
 		
+		visited[u] = true;
+		System.out.print(" ---> "+adjLists[u].name);
+		for(Neighbor nbr = adjLists[u].adjList; nbr!=null; nbr=nbr.next)
+		{
+			if(!visited[nbr.vertexNum]){
+				dfs(nbr.vertexNum);
+			}
+		}
 		
+	}
+	
+	
+	void bfs(int u){
 		
+		queue.add(u);
+		visited[u] = true;
+		
+		while(!queue.isEmpty()){
+			int v = (int) queue.poll();
+			System.out.print(" ---> "+adjLists[v].name);
+			for(Neighbor nbr = adjLists[v].adjList; nbr!= null; nbr = nbr.next)
+			{
+				if(!visited[nbr.vertexNum]){
+					queue.add(nbr.vertexNum);
+					visited[nbr.vertexNum] = true;
+				}
+			}
+		}
 	}
 	
 	
@@ -108,6 +148,27 @@ public class Graph {
 		Graph graph = new Graph(file);
 		graph.print();
 		
+		System.out.print("DFS traversal: ");
+		for(int u=0; u < graph.adjLists.length; u++)
+		{
+			if(!graph.visited[u]){
+				System.out.println("\n Connected Graph: ");
+				graph.dfs(u);
+			}
+		}
+		System.out.println("\n");
+		
+		graph.reset();
+		
+		System.out.print("BFS traversal: ");
+		for(int u=0; u < graph.adjLists.length; u++)
+		{
+			if(!graph.visited[u]){
+				System.out.println("\n Connected Graph: ");
+				graph.bfs(u);
+			}
+		}
+		System.out.println("\n");
 	}
 	
 	
